@@ -8,19 +8,30 @@ public class ClickLetter : MonoBehaviour
     public int id;
     bool chosen;
     bool disable;
-    public bool move_flag;
+    public bool move_flag = false;
     public Vector3 original_pos;
     public Vector3 new_pos;
     void Start()
     {
         disable = false;
         chosen = false;
-        original_pos = this.gameObject.transform.localPosition;
+    }
+
+    public void set_new_pos(Vector3 pos) {
+        new_pos = pos;
+    }
+
+    public void set_orig_pos(Vector3 pos) {
+        original_pos = pos;
+    }
+
+    public void set_move_flag(bool move) {
+        move_flag = move;
     }
 
     private void OnMouseDown() {
-        // Debug.Log("Test!");
-        if (!disable) {
+        if (!disable && !move_flag) {
+            GameControl.on_hover.SetActive(false);
             if (chosen) {
                 GameControl.remove_pos(this.gameObject);
                 new_pos = original_pos;
@@ -32,6 +43,22 @@ public class ClickLetter : MonoBehaviour
                 chosen = true;
             }
         }
+    }
+
+    private void OnMouseOver() {
+        if (!move_flag) {
+            if (chosen) {
+                GameControl.on_hover.transform.localPosition = original_pos;
+                GameControl.on_hover.SetActive(true);
+            } else {
+                GameControl.on_hover.transform.localPosition = GameControl.hover_avail_pos();
+                GameControl.on_hover.SetActive(true);
+            }
+        }
+    }
+
+    private void OnMouseExit() {
+        GameControl.on_hover.SetActive(false);
     }
 
     public void set_disable(bool val) {
@@ -68,7 +95,6 @@ public class ClickLetter : MonoBehaviour
         transform.localPosition = Vector2.MoveTowards(transform.localPosition, new_pos, 2000f * Time.deltaTime);
         if (Vector2.Distance(transform.localPosition, new_pos) < 0.1f) {
             move_flag = false;
-            Debug.Log("Hey!");
         }
 
     }
