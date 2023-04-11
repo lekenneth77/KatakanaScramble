@@ -5,12 +5,12 @@ using UnityEngine;
 public class ClickLetter : MonoBehaviour
 {
     // Start is called before the first frame update
-    public int id;
     bool chosen;
     bool disable;
     public bool move_flag = false;
     public Vector3 original_pos;
     public Vector3 new_pos;
+    public bool allow_hover = true;
     void Start()
     {
         disable = false;
@@ -46,7 +46,7 @@ public class ClickLetter : MonoBehaviour
     }
 
     private void OnMouseOver() {
-        if (!move_flag) {
+        if (!move_flag && allow_hover) {
             if (chosen) {
                 GameControl.on_hover.transform.localPosition = original_pos;
                 GameControl.on_hover.SetActive(true);
@@ -64,13 +64,6 @@ public class ClickLetter : MonoBehaviour
     public void set_disable(bool val) {
         disable = val;
         chosen = false; //lmao kinda lazy
-    }
-
-    public void set_id(int val) {
-        id = val;
-    }
-    public int get_id() {
-        return id;
     }
 
     public Vector3 get_pos() {

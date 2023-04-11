@@ -22,12 +22,15 @@ public class GameControl : MonoBehaviour
     int rounds_completed = 0;
     float secs_passed = 0f;
     bool start = false;
+    string cur_word;
 
     static bool check_flag;
 
     private List<string> words;
     private List<int> words_selected;
-    private string file_path = "Assets/text.txt";
+    // public static string file_path;
+    public static string file_path = "Assets/Texts/text.txt";
+
 
     private Sprite[] inter_sprites;
     private TMP_FontAsset font;
@@ -53,8 +56,9 @@ public class GameControl : MonoBehaviour
     private void get_words() {
         words = new List<string>();
         StreamReader inp_stm = new StreamReader(file_path);
+        string inp_ln = inp_stm.ReadLine( );
         while(!inp_stm.EndOfStream){
-            string inp_ln = inp_stm.ReadLine( );
+            inp_ln = inp_stm.ReadLine( );
             if (inp_ln == "" || inp_ln == "\n") {
                 continue;
             }
@@ -74,15 +78,15 @@ public class GameControl : MonoBehaviour
                 words_selected.Add(random);
             }
         }
-        string word = words[random];
+        cur_word = words[random];
         
         //create interactables
-        List<GameObject> interactables = create_interactables(word);
+        List<GameObject> interactables = create_interactables(cur_word);
         yield return new WaitForSeconds(0.5f);
         //set wps
-        wp = new Vector3[word.Length];
-        int from_back = word.Length - 1;
-        for (int i = 0; i < word.Length; i++) {
+        wp = new Vector3[cur_word.Length];
+        int from_back = cur_word.Length - 1;
+        for (int i = 0; i < cur_word.Length; i++) {
             int change_y = i < MAX_WORDS_ROW ? 0 : 225;
             int x_multiplier = i < MAX_WORDS_ROW ? i : i - MAX_WORDS_ROW; 
             wp[i] = new Vector3(-700 + (200 * x_multiplier), 600 - change_y, 1);
@@ -160,7 +164,8 @@ public class GameControl : MonoBehaviour
             Color tmp = bitter_map[i].GetComponent<SpriteRenderer>().color;
             tmp.a = 0.5f;
             bitter_map[i].GetComponent<SpriteRenderer>().color = tmp;
-            if (letter.get_id() != i) {
+            string cur_letter = bitter_map[i].transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text;
+            if (cur_letter != cur_word[i] + "") {
                 incorrect.Add(i);
             }
         }
@@ -170,6 +175,9 @@ public class GameControl : MonoBehaviour
             rounds_completed++;
             if (rounds_completed == words.Count) {
                 start = false;
+            }
+            foreach(GameObject letter in bitter_map) {
+                letter.GetComponent<ClickLetter>().allow_hover = false;
             }
             next.SetActive(true);
         } else {
@@ -267,7 +275,6 @@ public class GameControl : MonoBehaviour
             Vector3 vec_pos = new Vector3(-700 + (225 * (x_multiplier)), 150 - change_y, -1);
             click.set_new_pos(vec_pos);
             click.set_orig_pos(vec_pos);
-            click.set_id(word_index);
             inter.AddComponent<BoxCollider>();
             inter.transform.SetParent(choose_container.transform);
 
