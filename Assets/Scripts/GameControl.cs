@@ -15,7 +15,9 @@ public class GameControl : MonoBehaviour
     public GameObject choose_container;
     public GameObject ans_container;
 
-    const int MAX_WORDS_ROW = 6;
+    const int MAX_WORDS_ROW = 8;
+    const int INTER_WIDTH = 25;
+
     static Vector3[] wp;
     static GameObject[] bitter_map;
     static int count_selected;
@@ -24,12 +26,14 @@ public class GameControl : MonoBehaviour
     bool start = false;
     string cur_word;
 
+    
+
     static bool check_flag;
 
     private List<string> words;
     private List<int> words_selected;
-    // public static string file_path;
-    public static string file_path = "Assets/Texts/text.txt";
+    public static string file_path;
+    // public static string file_path = "Assets/Texts/oldgame.txt";
 
 
     private Sprite[] inter_sprites;
@@ -37,9 +41,6 @@ public class GameControl : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         get_words();
-        foreach (string s in words) {
-            Debug.Log(s);
-        }
         inter_sprites = Resources.LoadAll<Sprite>("interactables/");
         TMP_FontAsset[] fonts = Resources.LoadAll<TMP_FontAsset>("SU3DJPFont/TextMeshProFont/Selected/");
         font = fonts[0];
@@ -50,7 +51,6 @@ public class GameControl : MonoBehaviour
         on_hover = GameObject.Find("on_hover");
         on_hover.SetActive(false);
         StartCoroutine("setup_game");
-        start = true;
     }
 
     private void get_words() {
@@ -79,17 +79,22 @@ public class GameControl : MonoBehaviour
             }
         }
         cur_word = words[random];
-        
+        Debug.Log(cur_word);
         //create interactables
         List<GameObject> interactables = create_interactables(cur_word);
         yield return new WaitForSeconds(0.5f);
         //set wps
         wp = new Vector3[cur_word.Length];
         int from_back = cur_word.Length - 1;
+        int y_multiplier = 0;
+        int x_multiplier = 0;
         for (int i = 0; i < cur_word.Length; i++) {
-            int change_y = i < MAX_WORDS_ROW ? 0 : 225;
-            int x_multiplier = i < MAX_WORDS_ROW ? i : i - MAX_WORDS_ROW; 
-            wp[i] = new Vector3(-700 + (200 * x_multiplier), 600 - change_y, 1);
+            if (i % MAX_WORDS_ROW == 0) {
+                y_multiplier++;
+                x_multiplier = 0;
+            }
+
+            wp[i] = new Vector3(-800 + (INTER_WIDTH * 6 * x_multiplier), 800 - y_multiplier * (INTER_WIDTH * 6), 1);
 
             interactables[from_back].GetComponent<ClickLetter>().set_move_flag(true);
             from_back--;
@@ -97,6 +102,7 @@ public class GameControl : MonoBehaviour
                 interactables[from_back].transform.GetChild(0).gameObject.SetActive(true);
             }
             yield return new WaitForSeconds(0.3f);
+            x_multiplier++;
         }
 
         round_counter.text = (rounds_completed + 1).ToString() + "/" + words.Count.ToString();
@@ -104,6 +110,7 @@ public class GameControl : MonoBehaviour
         check_flag = false;
         interactables.Clear();
         bitter_map = new GameObject[wp.Length];
+        start = true;
     }
 
     public static Vector3 available_pos(GameObject that) {
@@ -173,9 +180,7 @@ public class GameControl : MonoBehaviour
         if (incorrect.Count == 0) {
             Debug.Log("Correct!");
             rounds_completed++;
-            if (rounds_completed == words.Count) {
-                start = false;
-            }
+            start = false;
             foreach(GameObject letter in bitter_map) {
                 letter.GetComponent<ClickLetter>().allow_hover = false;
             }
@@ -211,22 +216,22 @@ public class GameControl : MonoBehaviour
         List<GameObject> ret = new List<GameObject>();
         List<int> pos = new List<int>();
         List<int> rand_letter = new List<int>();
-
+        int y_multiplier = 0;
         for (int i = 0; i < word.Length; i++) {
-            int change_y = i < MAX_WORDS_ROW ? 0 : 225;
-            if (i == MAX_WORDS_ROW) {
+            if (i % MAX_WORDS_ROW == 0) {
+                y_multiplier++;
                 pos.Clear();
             }
             GameObject inter = new GameObject("inter" + (i + 1));
             RectTransform trans = inter.AddComponent<RectTransform>();
             trans.transform.SetParent(choose_container.transform);
-            trans.localScale = new Vector3(35, 35, 1);
+            trans.localScale = new Vector3(INTER_WIDTH, INTER_WIDTH, 1);
             trans.sizeDelta = new Vector3(1, 1, 1);
             int rand_cap = -1;
             if (word.Length <= MAX_WORDS_ROW) {
                 rand_cap = word.Length;
             } else {
-                rand_cap = i >= MAX_WORDS_ROW ? (word.Length % MAX_WORDS_ROW) : MAX_WORDS_ROW;
+                rand_cap = i >= word.Length - (word.Length % MAX_WORDS_ROW) ? (word.Length % MAX_WORDS_ROW) : MAX_WORDS_ROW;
                 if (rand_cap == 0) {
                     rand_cap = MAX_WORDS_ROW;
                 }
@@ -272,7 +277,7 @@ public class GameControl : MonoBehaviour
             text.alignment = TextAlignmentOptions.Center;    
             
             ClickLetter click = inter.AddComponent<ClickLetter>();
-            Vector3 vec_pos = new Vector3(-700 + (225 * (x_multiplier)), 150 - change_y, -1);
+            Vector3 vec_pos = new Vector3(-800 + (INTER_WIDTH * (6 * x_multiplier)), 300 - y_multiplier * (INTER_WIDTH * 6), -1);
             click.set_new_pos(vec_pos);
             click.set_orig_pos(vec_pos);
             inter.AddComponent<BoxCollider>();
