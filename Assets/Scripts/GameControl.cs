@@ -8,9 +8,13 @@ using TMPro;
 public class GameControl : MonoBehaviour
 {
     public GameObject next;
+    public Image seacreature_img;
+    public GameObject correct_img;
+    public GameObject incorrect_img;
     public TextMeshProUGUI round_counter;
     public TextMeshProUGUI timer_text;
     public static GameObject on_hover;
+    public GameObject congrats_con;
 
     public GameObject choose_container;
     public GameObject ans_container;
@@ -33,15 +37,18 @@ public class GameControl : MonoBehaviour
     private List<string> words;
     private List<int> words_selected;
     public static string file_path;
-    // public static string file_path = "Assets/Texts/oldgame.txt";
+    // public static string file_path = "Assets/Texts/test.txt";
 
 
     private Sprite[] inter_sprites;
+    private Sprite[] seacreatures;
     private TMP_FontAsset font;
     // Start is called before the first frame update
     void Start() {
         get_words();
         inter_sprites = Resources.LoadAll<Sprite>("interactables/");
+        seacreatures = Resources.LoadAll<Sprite>("seacreatures/");
+        seacreature_img.sprite = seacreatures[Random.Range(0, seacreatures.Length)];
         TMP_FontAsset[] fonts = Resources.LoadAll<TMP_FontAsset>("SU3DJPFont/TextMeshProFont/Selected/");
         font = fonts[0];
         rounds_completed = 0;
@@ -179,14 +186,27 @@ public class GameControl : MonoBehaviour
         yield return new WaitForSeconds(1f);
         if (incorrect.Count == 0) {
             Debug.Log("Correct!");
-            rounds_completed++;
             start = false;
             foreach(GameObject letter in bitter_map) {
                 letter.GetComponent<ClickLetter>().allow_hover = false;
             }
-            next.SetActive(true);
+
+            correct_img.SetActive(true);
+            if (rounds_completed < words.Count) {
+                rounds_completed++;
+                if (rounds_completed >= words.Count) {
+                    yield return new WaitForSeconds(2f);
+                    display_finish();
+                } else {
+                    next.SetActive(true);
+                }
+            } 
         } else {
             Debug.Log("incorrect");
+            incorrect_img.SetActive(true);
+            yield return new WaitForSeconds(2f);
+            incorrect_img.SetActive(false);
+
             foreach (int i in incorrect) {
                 Color tmp = bitter_map[i].GetComponent<SpriteRenderer>().color;
                 tmp.a = 1f;
@@ -205,11 +225,22 @@ public class GameControl : MonoBehaviour
             for (int i = 0; i < bitter_map.Length; i++) {
                 Destroy(bitter_map[i]);
             }
+            correct_img.SetActive(false);
             next.SetActive(false);
             StartCoroutine("setup_game");
-        } else {
-            Debug.Log("No more rounds");
         }
+    }
+
+    private void display_finish() {
+        for (int i = 0; i < bitter_map.Length; i++) {
+                Destroy(bitter_map[i]);
+            }
+        correct_img.SetActive(false);
+        GameObject.Find("Pause").SetActive(false);
+        GameObject.Find("RoundContainer").SetActive(false);
+        congrats_con.transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>()
+            .text = "You finished " + rounds_completed + " rounds in "+ secs_passed.ToString("0.00") + " seconds!";
+        congrats_con.SetActive(true);
     }
     
     private List<GameObject> create_interactables(string word) {
@@ -287,5 +318,7 @@ public class GameControl : MonoBehaviour
         }
         return ret;
     }    
+
+    
     
 }

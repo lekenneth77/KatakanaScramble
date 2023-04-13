@@ -6,7 +6,7 @@ public class ClickLetter : MonoBehaviour
 {
     // Start is called before the first frame update
     bool chosen;
-    bool disable;
+    public bool disable;
     public bool move_flag = false;
     public Vector3 original_pos;
     public Vector3 new_pos;

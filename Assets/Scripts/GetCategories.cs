@@ -71,6 +71,7 @@ public class GetCategories : MonoBehaviour
 
     void choose_category(string file_path) {
         GameControl.file_path = file_path;
+        loadingPanel.GetComponent<FadeOutPanel>().sceneIndex = 2;
         loadingPanel.SetActive(true);
     }
 
