@@ -5,6 +5,7 @@ using UnityEngine;
 public class ClickLetter : MonoBehaviour
 {
     // Start is called before the first frame update
+    public AudioSource deal_card;
     bool chosen;
     public bool disable;
     public bool move_flag = false;
@@ -32,6 +33,7 @@ public class ClickLetter : MonoBehaviour
     private void OnMouseDown() {
         if (!disable && !move_flag) {
             GameControl.on_hover.SetActive(false);
+            deal_card.Play();
             if (chosen) {
                 GameControl.remove_pos(this.gameObject);
                 new_pos = original_pos;

@@ -7,6 +7,9 @@ using TMPro;
 
 public class GameControl : MonoBehaviour
 {
+
+    public AudioSource deal_card, failure_sfx, success_sfx, buttonclick_sfx, kids_cheer;
+
     public GameObject next;
     public Image seacreature_img;
     public GameObject correct_img;
@@ -36,8 +39,8 @@ public class GameControl : MonoBehaviour
 
     private List<string> words;
     private List<int> words_selected;
-    public static string file_path;
-    // public static string file_path = "Assets/Texts/test.txt";
+    // public static string file_path;
+    public static string file_path = "Assets/Texts/test.txt";
 
 
     private Sprite[] inter_sprites;
@@ -46,6 +49,7 @@ public class GameControl : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         get_words();
+        setup_music();
         inter_sprites = Resources.LoadAll<Sprite>("interactables/");
         seacreatures = Resources.LoadAll<Sprite>("seacreatures/");
         seacreature_img.sprite = seacreatures[Random.Range(0, seacreatures.Length)];
@@ -108,6 +112,7 @@ public class GameControl : MonoBehaviour
             if (from_back != -1) {
                 interactables[from_back].transform.GetChild(0).gameObject.SetActive(true);
             }
+            deal_card.Play();
             yield return new WaitForSeconds(0.3f);
             x_multiplier++;
         }
@@ -192,6 +197,7 @@ public class GameControl : MonoBehaviour
             }
 
             correct_img.SetActive(true);
+            success_sfx.Play();
             if (rounds_completed < words.Count) {
                 rounds_completed++;
                 if (rounds_completed >= words.Count) {
@@ -203,8 +209,9 @@ public class GameControl : MonoBehaviour
             } 
         } else {
             Debug.Log("incorrect");
+            failure_sfx.Play();
             incorrect_img.SetActive(true);
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(3f);
             incorrect_img.SetActive(false);
 
             foreach (int i in incorrect) {
@@ -217,10 +224,12 @@ public class GameControl : MonoBehaviour
                 bitter_map[i] = null;
                 count_selected--;
             }
+            deal_card.Play();
         }
     }
 
     private void next_round() {
+        buttonclick_sfx.Play();
         if (rounds_completed != words.Count) {
             for (int i = 0; i < bitter_map.Length; i++) {
                 Destroy(bitter_map[i]);
@@ -232,6 +241,7 @@ public class GameControl : MonoBehaviour
     }
 
     private void display_finish() {
+        kids_cheer.Play();
         for (int i = 0; i < bitter_map.Length; i++) {
                 Destroy(bitter_map[i]);
             }
@@ -311,13 +321,26 @@ public class GameControl : MonoBehaviour
             Vector3 vec_pos = new Vector3(-800 + (INTER_WIDTH * (6 * x_multiplier)), 300 - y_multiplier * (INTER_WIDTH * 6), -1);
             click.set_new_pos(vec_pos);
             click.set_orig_pos(vec_pos);
+            click.deal_card = deal_card;
             inter.AddComponent<BoxCollider>();
             inter.transform.SetParent(choose_container.transform);
 
             ret.Add(inter);
         }
         return ret;
+    }
+
+    void setup_music() {
+        deal_card = audio_src_comp("DealCard");
+        success_sfx = audio_src_comp("Nice");
+        failure_sfx = audio_src_comp("Failure");
+        buttonclick_sfx = audio_src_comp("ButtonClick");
+        kids_cheer = audio_src_comp("KidsCheer");
     }    
+    
+    AudioSource audio_src_comp(string gameobj_name) {
+        return GameObject.Find(gameobj_name).GetComponent<AudioSource>();
+    }
 
     
     

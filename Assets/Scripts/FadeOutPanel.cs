@@ -13,6 +13,7 @@ public class FadeOutPanel : MonoBehaviour
     }
 
     IEnumerator load_scene_async() {
+        
         Image img = gameObject.GetComponent<Image>();
         Color temp = img.color;
         temp.a = 0;
@@ -26,6 +27,11 @@ public class FadeOutPanel : MonoBehaviour
         }
         gameObject.transform.GetChild(0).gameObject.SetActive(true);
         yield return new WaitForSeconds(0.5f);
+        if (sceneIndex == 2) {
+            GameObject.FindGameObjectWithTag("Music").GetComponent<MusicMaster>().StopMusic();
+        } else {
+            GameObject.FindGameObjectWithTag("Music").GetComponent<MusicMaster>().PlayMusic();
+        }
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneIndex);
     }
 
